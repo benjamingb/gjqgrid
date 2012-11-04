@@ -271,4 +271,10 @@ class JqGrid implements JqGridInterface
         return false;
     }
 
+    public function source($source)
+    {
+        $source->setJqGridColums($this->getColumns());
+    }
+
+
 }
