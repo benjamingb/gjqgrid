@@ -26,6 +26,7 @@ namespace GJqGrid\Adapter;
 use Zend\Paginator\Adapter;
 use Zend\Paginator\Adapter\DbSelect;
 use Zend\Db\Sql\Where;
+use Zend\Db\Sql\Predicate\PredicateSet;
 
 class AdapterDbSelect extends DbSelect implements AdapterInterface
 {
@@ -40,23 +41,28 @@ class AdapterDbSelect extends DbSelect implements AdapterInterface
 
     public function filter(array $filters = array())
     {
+        $where = $this->select->getRawState('where');
+
         if (!empty($filters)) {
             foreach ($filters['rules'] as $rules) {
 
-                $where = $this->operator($rules['op'], $rules['field'], $rules['data']);
+                $predicate = $this->operator($rules, $where);
 
                 if ($filters['groupOp'] == 'AND') {
-                    $this->select->where($where);
+                    $this->select->where($predicate);
                 } else {
-                    $this->select->orWhere($where);
+                    $this->select->where($predicate->or);
                 }
             }
         }
+        var_dump($this->getSelect());
     }
 
-    protected function operator($op, $field, $data)
+    protected function operator($rules, $where)
     {
-        $where = new Where ();
+        $op     = $rules['op'];
+        $field  = $rules['field'];
+        $data   = $rules['data'];
 
         switch ($op) {
             case 'eq':
@@ -90,6 +96,11 @@ class AdapterDbSelect extends DbSelect implements AdapterInterface
             default:
                 return false;
         }
+    }
+
+    public function getSelect()
+    {
+        return $this->sql->getSqlStringForSqlObject($this->select);
     }
 
 }
