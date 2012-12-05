@@ -6,7 +6,7 @@ return array(
 			'/js/jqGrid/css/ui.jqgrid.css'
 		),
 		'scripts'=> array(
-			'/js/jqGrid/js/i18n/grid.locale-en.js',
+			'/js/jqGrid/js/i18n/grid.locale-es.js',
 			'/js/jqGrid/js/jquery.jqGrid.min.js',
 		)
 	),
@@ -16,4 +16,9 @@ return array(
 			  'column'                  => 'GJqGrid\View\Helper\Column',
 		),
 	),
+	'view_manager' => array(
+        'strategies'   => array(
+            'ViewJsonStrategy',
+        ),
+    ),
 );

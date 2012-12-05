@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -11,9 +12,12 @@
 namespace GJqGrid;
 
 use Traversable;
-
 use GJqGrid\Exception;
-
+use GJqGrid\Source;
+use Zend\ServiceManager\ServiceManager;
+use Zend\Paginator\Paginator;
+use Zend\Json\Json;
+use Zend\Db\Sql\Sql;
 
 /**
  * @category   Zend
@@ -21,12 +25,14 @@ use GJqGrid\Exception;
  */
 class JqGrid implements JqGridInterface
 {
+
     /**
      * Seed attributes
      *
      * @var array
      */
     protected $attributes = array(
+        'mtype' => 'POST',
         'url' => '',
         'datatype' => 'local',
         'colNames' => '',
@@ -34,16 +40,17 @@ class JqGrid implements JqGridInterface
         'width' => 'auto',
         'height' => 'auto',
     );
-
     protected $methods = array();
+
     /**
      * id jqgrid
      * 
      * @var string
      */
     protected $id;
-
     protected $columns = array();
+    protected $source;
+    protected static $serviceManager;
 
     /**
      * @param  int|string  $id  for the jqgrid
@@ -52,10 +59,10 @@ class JqGrid implements JqGridInterface
      */
     public function __construct($id = null, $attributes = array())
     {
-         if (null !== $id) {
+        if (null !== $id) {
             $this->setId($id);
         }
-        
+
         if (!empty($attributes)) {
             $this->setAttributes($attributes);
         }
@@ -77,7 +84,7 @@ class JqGrid implements JqGridInterface
     public function getId()
     {
         if (empty($this->id)) {
-            throw new Exception\InvalidArgumentException('JqGrid require have a id '.__METHOD__);
+            throw new Exception\InvalidArgumentException('JqGrid require have a id ' . __METHOD__);
         }
         return $this->id;
     }
@@ -133,9 +140,7 @@ class JqGrid implements JqGridInterface
     {
         if (!is_array($arrayOrTraversable) && !$arrayOrTraversable instanceof Traversable) {
             throw new Exception\InvalidArgumentException(sprintf(
-                            '%s expects an array or Traversable argument; received "%s"', 
-                            __METHOD__, 
-                            (is_object($arrayOrTraversable) ? get_class($arrayOrTraversable) : gettype($arrayOrTraversable))
+                    '%s expects an array or Traversable argument; received "%s"', __METHOD__, (is_object($arrayOrTraversable) ? get_class($arrayOrTraversable) : gettype($arrayOrTraversable))
             ));
         }
 
@@ -166,7 +171,7 @@ class JqGrid implements JqGridInterface
         return $this;
     }
 
-  /**
+    /**
      * Remove attribute
      *
      * @param  string $key
@@ -181,21 +186,20 @@ class JqGrid implements JqGridInterface
         return false;
     }
 
-
     public function setMethod()
     {
         $numargs = func_num_args();
         $arguments = func_get_args();
-        
-        if($numargs>0){
-            $key =  (string)$arguments[0];
+
+        if ($numargs > 0) {
+            $key = (string) $arguments[0];
             unset($arguments[0]);
-            if($key == 'navGrid'){
-                if(is_string($arguments[1]) && "#"==$arguments[1][0]){
-                    $this->setAttribute('pager',$arguments[1]);
-                }else{
-                  $this->setAttribute('pager',"{$this->getId()}_pager");
-                  array_unshift($arguments, "#{$this->getId()}_pager");
+            if ($key == 'navGrid') {
+                if (is_string($arguments[1]) && "#" == $arguments[1][0]) {
+                    $this->setAttribute('pager', $arguments[1]);
+                } else {
+                    $this->setAttribute('pager', "{$this->getId()}_pager");
+                    array_unshift($arguments, "#{$this->getId()}_pager");
                 }
             }
 
@@ -204,7 +208,14 @@ class JqGrid implements JqGridInterface
         return $this;
     }
 
+    public function getDataType()
+    {
+        if (null === $this->getAttribute('datatype')) {
+            $this->setAttribute('datatype', 'local');
+        }
 
+        return $this->getAttribute('datatype');
+    }
 
     /**
      * 
@@ -214,7 +225,6 @@ class JqGrid implements JqGridInterface
     {
         return $this->methods;
     }
-
 
     /**
      *
@@ -271,10 +281,104 @@ class JqGrid implements JqGridInterface
         return false;
     }
 
-    public function source($source)
+    public static function setService(ServiceManager $sm)
     {
-        $source->setJqGridColums($this->getColumns());
+
+        self::$serviceManager = $sm;
     }
 
+    public static function getService()
+    {
+        return self::$serviceManager;
+    }
+
+    public function source($source)
+    {
+        $this->source = $source;
+    }
+
+    public function getSource()
+    {
+        return $this->source;
+    }
+
+    protected function getParam($name, $default = null)
+    {
+        $mtype = $this->getAttribute('mtype');
+        $request = self::getService()->get('request');
+         if (null !== $mtype && strtoupper($mtype) == 'POST') {
+            return $request->getPost($name, $default);
+         }else{
+            //$param = self::getService()->get('Application')->getMvcEvent()->getRouteMatch();
+            $param = self::getService()->get('ControllerPluginManager')->get('Params');
+            return $param->fromQuery($name,$default);
+         }
+    }
+
+    public function display()
+    {
+
+        if (!self::getService()->get('request')->isXmlHttpRequest()) {
+            return null;
+        }
+
+  
+        $page = (int) $this->getParam('page', 1);
+        $rows = (int) $this->getParam('rows', 20);
+  
+        $paginator = new Paginator ($this->getSource());
+
+        // Filter items 
+        if ($this->getParam('_search') == 'true') {
+            $filters = Json::decode($this->getParam('filters'),Json::TYPE_ARRAY);
+            $paginator->getAdapter()->filter($filters);
+        }
+        //Sort items by column
+        if ($sidx = $this->getParam('sidx')) {
+            $paginator->getAdapter()->sort($sidx, $this->getParam('sord'));
+        }
+
+        $paginator->setCurrentPageNumber($page, $rows);
+        $paginator->setItemCountPerPage($rows);
+
+        $rowsetGrid = array();
+        $rowsetGrid['page']     = $paginator->getCurrentPageNumber();
+        $rowsetGrid['total']    = $paginator->count();
+        $rowsetGrid['records']  = $paginator->getTotalItemCount();
+
+        $items          = $paginator->getCurrentItems();
+        $jqGridColumns  = $this->getColumns();
+
+        //$sql = new Sql(self::getService()->get('Zend\Db\Adapter\Adapter'));
+        //var_dump($sql->getSqlStringForSqlObject($this->getSource()->getSelect()));
+
+        foreach ($items as $index => $column) {
+            $cells = array();
+            if (is_array($column) || is_object($column)) {
+                foreach ($jqGridColumns as $jqCol) {
+                    $name = $jqCol->getName();
+                    if (isset($column[$name])) {
+                        $cells[] = $column[$name];
+                    } else {
+                        $cells[] = ''; //columna Vacia 
+                    }
+                    $rowsetGrid['rows'][$index]['id'] = $cells[0];
+                }
+            } else {
+                $cells[] = $column;
+                $rowsetGrid['rows'][$index]['id'] = $index;
+            }
+            $rowsetGrid['rows'][$index]['cell'] = $cells;
+        }
+
+
+        $this->sendResponse(\Zend\Json\Json::encode($rowsetGrid));
+    }
+
+    protected function sendResponse($data)
+    {
+        echo $data;
+        exit;
+    }
 
 }

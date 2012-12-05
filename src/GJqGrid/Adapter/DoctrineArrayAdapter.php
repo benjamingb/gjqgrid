@@ -180,18 +180,6 @@ class DoctrineArrayAdapter implements AdapterInterface
         return $array;
     }
 
-    /**
-     * Only versions PHP5.2X
-     * 
-     * @param type $name
-     * @return type 
-     */
-    public function __get($name)
-    {
-        if (defined("self::$name")) {
-            return constant("self::$name");
-        }
-        trigger_error("$name  isn't defined");
-    }
+
 
 }

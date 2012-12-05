@@ -3,7 +3,7 @@
 namespace GJqGrid;
 
 use GJqGrid\Adapter\AdapterInterface;
-
+use Zend\ServiceManager\ServiceManager;
 
 
 
@@ -14,9 +14,9 @@ class Source
 
 	protected $adapter;
 
-	protected $paginator;
 
-	protected $jqGridColumns = array();
+
+ 
 
 	function __construct($adapter)
 	{
@@ -33,16 +33,17 @@ class Source
 	}
 
 
-	public function setPaginator($page = 1, $rows = 10)
-	{
-		$this->paginator = $this->adapter->getPaginator();
-		$this->paginator->setCurrentPageNumber($page, $rows);
-		$this->paginator->setItemCountPerPage($rows);
 
-		return $this;
+	public function paginator($page = 1, $rows = 10)
+	{
+		$paginator = $this->adapter->getPaginator();
+		$paginator->setCurrentPageNumber($page, $rows);
+		$paginator->setItemCountPerPage($rows);
+
+		return $paginator;
 	}
 
-	public function getPaginator()
+	/*public function getPaginator()
 	{
 		return $this->paginator;
 	}
@@ -51,14 +52,23 @@ class Source
 	public function setJqGridColums($columns)
 	{
 		$this->jqGridColumns = $columns;
-	}
+	}*/
 
 
-	public function getData()
+	/*public function getData()
 	{
 
-		$this->setPaginator();
+        $request = self::getService()->get('request');
+		
+        $request->getPot('page'); 
+        
+        //var_dump(self::getService()->get('Application')->getMvcEvent()->getRouteMatch()->getParam('page'));
+     
+        $paginatorRows =  $this->context->params()->fromQuery('rows',20); 
+		$this->setPaginator($paginatorPage, $paginatorRows);
 		$paginator = $this->getPaginator();
+
+
 
 		$rowsetGrid = array();
 		$rowsetGrid['page'] = $paginator->getCurrentPageNumber();
@@ -87,18 +97,39 @@ class Source
             $rowsetGrid['rows'][$index]['cell'] = $cells;	
         	
         }
+     	
 
-        return $rowsetGrid;
-		//var_dump();
-		//print_r($rowsetGrid);
+        if(!$this->context->getRequest()->isXmlHttpRequest()){
+            //return array();
+        }
 
-       //cho  \Zend\Json\Json::encode($rowsetGrid);
-		//var_dump($this->jqGridColumns);
-
-        /*foreach ($paginator as $row => $column) 
-        {
-        	var_dump($row);
-        	var_dump($column);
-        }*/
+        $viewmodel = new \Zend\View\Model\ViewModel();
+        $request = $this->context->getRequest();
+        $viewmodel->setTerminal($request->isXmlHttpRequest());
+        return $viewmodel;
+     	//echo \Zend\Json\Json::encode($rowsetGrid);
+     	//return array();
+        //return $rowsetGrid;
+        
+  
 	}
+
+	public function context($context)
+    {
+        $this->context = $context;
+        return $this;
+    }
+
+    private function request()
+    {
+        return $this->context;;
+    }
+
+    public function toJson()
+    {
+        $data = $this->getData();
+        return  \Zend\Json\Json::encode($data);
+    }*/
+
+
 }

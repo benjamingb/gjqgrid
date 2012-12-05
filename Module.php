@@ -13,7 +13,8 @@ use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\Loader\AutoloaderFactory;
 use Zend\Loader\StandardAutoloader;
 
-use GJqGrid\View\Helper\JqGrid;
+
+use GJqGrid\JqGrid;
 
 
 class Module implements AutoloaderProviderInterface
@@ -34,7 +35,10 @@ class Module implements AutoloaderProviderInterface
 		return include __DIR__ . '/config/module.config.php';
 	}
 
-	public function onBootstrap( $e ) {
+	public function onBootstrap( $e ) 
+	{
+			JqGrid::setService($e->getApplication()->getServiceManager());
+
 			$moduleConfig = $this->getConfig();  
             $sm = $e->getApplication()->getServiceManager();  
             $helper = $sm->get('viewhelpermanager')->get('jqgrid');  
