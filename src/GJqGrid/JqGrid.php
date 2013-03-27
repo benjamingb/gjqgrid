@@ -15,9 +15,9 @@ use Traversable;
 use GJqGrid\Exception;
 use GJqGrid\Source;
 use Zend\ServiceManager\ServiceManager;
-use Zend\Paginator\Paginator;
 use Zend\Json\Json;
 use Zend\Db\Sql\Sql;
+use Zend\Paginator\Paginator;
 
 /**
  * @category   Zend
@@ -306,13 +306,13 @@ class JqGrid implements JqGridInterface
     {
         $mtype = $this->getAttribute('mtype');
         $request = self::getService()->get('request');
-         if (null !== $mtype && strtoupper($mtype) == 'POST') {
+        if (null !== $mtype && strtoupper($mtype) == 'POST') {
             return $request->getPost($name, $default);
-         }else{
+        } else {
             //$param = self::getService()->get('Application')->getMvcEvent()->getRouteMatch();
             $param = self::getService()->get('ControllerPluginManager')->get('Params');
-            return $param->fromQuery($name,$default);
-         }
+            return $param->fromQuery($name, $default);
+        }
     }
 
     public function display()
@@ -322,15 +322,16 @@ class JqGrid implements JqGridInterface
             return null;
         }
 
-  
+
         $page = (int) $this->getParam('page', 1);
         $rows = (int) $this->getParam('rows', 20);
-  
-        $paginator = new Paginator ($this->getSource());
+
+
+        $paginator = new Paginator($this->getSource());
 
         // Filter items 
         if ($this->getParam('_search') == 'true') {
-            $filters = Json::decode($this->getParam('filters'),Json::TYPE_ARRAY);
+            $filters = Json::decode($this->getParam('filters'), Json::TYPE_ARRAY);
             $paginator->getAdapter()->filter($filters);
         }
         //Sort items by column
@@ -342,15 +343,13 @@ class JqGrid implements JqGridInterface
         $paginator->setItemCountPerPage($rows);
 
         $rowsetGrid = array();
-        $rowsetGrid['page']     = $paginator->getCurrentPageNumber();
-        $rowsetGrid['total']    = $paginator->count();
-        $rowsetGrid['records']  = $paginator->getTotalItemCount();
+        $rowsetGrid['page'] = $paginator->getCurrentPageNumber();
+        $rowsetGrid['total'] = $paginator->count();
+        $rowsetGrid['records'] = $paginator->getTotalItemCount();
 
-        $items          = $paginator->getCurrentItems();
-        $jqGridColumns  = $this->getColumns();
 
-        //$sql = new Sql(self::getService()->get('Zend\Db\Adapter\Adapter'));
-        //var_dump($sql->getSqlStringForSqlObject($this->getSource()->getSelect()));
+        $items = $paginator->getCurrentItems();
+        $jqGridColumns = $this->getColumns();
 
         foreach ($items as $index => $column) {
             $cells = array();

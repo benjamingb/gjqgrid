@@ -27,6 +27,10 @@ use Zend\Paginator\Adapter;
 use Zend\Paginator\Adapter\DbSelect;
 use Zend\Db\Sql\Where;
 use Zend\Db\Sql\Predicate\PredicateSet;
+use Zend\Db\Sql\Predicate\Like;
+use GJqGrid\Adapter\Sql\Predicate\NotIn;
+use GJqGrid\Adapter\Sql\Predicate\NotLike;
+
 
 class AdapterDbSelect extends DbSelect implements AdapterInterface
 {
@@ -55,7 +59,6 @@ class AdapterDbSelect extends DbSelect implements AdapterInterface
                 }
             }
         }
-        var_dump($this->getSelect());
     }
 
     protected function operator($rules, $where)
@@ -80,19 +83,19 @@ class AdapterDbSelect extends DbSelect implements AdapterInterface
             case 'bw':
                 return $where->like($field, "$data%");
             case 'bn':
-            //return $db->quoteInto(" NOT LIKE ?", "$value%");
+            	return $where->addPredicate(new NotLike($field, "$data%"));
             case 'in':
-            //return $db->quoteInto(" IN (?)", $value);
+            	return $where->in($field, array($data));
             case 'ni':
-            //return $db->quoteInto(" NOT IN (?)", $value);
+            	return $where->addPredicate(new NotIn($field, array($data)));
             case 'ew':
                 return $where->like($field, "%$data");
             case 'en':
-            //return $db->quoteInto(" NOT LIKE ?", "%$value");
+            	return $where->addPredicate(new NotLike($field, "%$data"));
             case 'cn':
                 return $where->like($field, "%$data%");
             case 'nc':
-            //return $db->quoteInto(" NOT LIKE ?", "%$value%");
+            	return $where->addPredicate(new NotLike($field, "%$data%"));
             default:
                 return false;
         }
@@ -100,7 +103,7 @@ class AdapterDbSelect extends DbSelect implements AdapterInterface
 
     public function getSelect()
     {
-        return $this->sql->getSqlStringForSqlObject($this->select);
+        return $this->select->getSqlString();
     }
 
 }
