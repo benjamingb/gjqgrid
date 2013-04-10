@@ -16,7 +16,7 @@ class Column extends BaseAbstractHelper
         if ($jqgrid instanceof JqGridInterface) {
             $cols = $jqgrid->getColumns();
             foreach ($cols as $col) {
-            	$colNames[] = $col->getName();
+            	$colNames[] = $col->getColName();
             	$colModel[] = $col->getAttributes();
             }
         }

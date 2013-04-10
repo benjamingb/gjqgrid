@@ -19,37 +19,97 @@ namespace GJqGrid\Adapter;
  * @license    http://gnbit.com/license/new-bsd     New BSD License
  * @version    $
  */
-use DoctrineORMModule\Paginator\Adapter\DoctrinePaginator;
-use Doctrine\ORM\Tools\Pagination\Paginator as ORMPaginator;
 use Zend\Paginator\Adapter\AdapterInterface as PaginatorAdapterInterface;
+use GJqGrid\Adapter\Paginator\GDoctrinePaginator;
 
-class AdapterDoctrine extends DoctrinePaginator implements AdapterInterface
+/**
+ * Nota:
+ * 
+ * Tiene muchas limitaciones 
+ *- No funciona La pagina con Consultas cimpuestas (Join)
+ *- Falta definir el alias, cuando sean sonsultas compuestas   
+ */
+
+class AdapterDoctrine implements AdapterInterface
 {
 
     protected $entityManager;
-    protected $select = null;
-    protected $adpater;
+    protected $query = null;
 
     public function __construct($query, $entityManager)
     {
-        //$query->orderBy('r.e', 'DESC');
-        $this->select = $query; //Array
-        parent::__construct(new ORMPaginator($this->select->getQuery()->setHydrationMode(2)));
-        //$this->entityManager = $entityManager;
+        $this->entityManager = $entityManager;
+        $this->query = $query;
     }
 
     public function sort($column = null, $order = "ASC")
     {
         $order = strtoupper($order);
         if (!empty($column)) {
-            $alias = $this->select->getRootAliases();
-            $this->select->orderBy("{$alias[0]}.$column", "$order");
+            $alias = $this->query->getRootAliases();
+            $this->query->orderBy("{$alias[0]}.$column", "$order");
         }
     }
 
     public function filter(array $filters = array())
     {
-        
+
+        $alias = $this->query->getRootAliases();
+
+        $qb = $this->entityManager->createQueryBuilder();
+
+        if (!empty($filters)) {
+            foreach ($filters['rules'] as $rules) {
+                $predicate = $this->operator($rules, $qb);
+                if ($filters['groupOp'] == 'AND') {
+                    $this->query->andWhere($predicate);
+                } else {
+                    $this->query->orWhere($predicate);
+                }
+            }
+        }
+    }
+
+    protected function operator($rules, $qb)
+    {
+        $op = $rules['op'];
+        $field = "i." . $rules['field'];
+        $data = $rules['data'];
+
+        switch ($op) {
+            case 'eq':
+                return $qb->expr()->eq($field, $qb->expr()->literal($data));
+            case 'ne':
+                return $qb->expr()->neq($field, $qb->expr()->literal($data));
+            case 'lt':
+                return $qb->expr()->lt($field, $qb->expr()->literal($data));
+            case 'le':
+                return $qb->expr()->lte($field, $qb->expr()->literal($data));
+            case 'gt':
+                return $qb->expr()->gt($field, $qb->expr()->literal($data));
+            case 'ge':
+                return $qb->expr()->gte($field, $qb->expr()->literal($data));
+            case 'bw':
+                return $qb->expr()->like($field, $qb->expr()->literal($data . '%'));
+            case 'bn':
+                return $qb->expr()->not($qb->expr()->like($field, $qb->expr()->literal($data . '%')));
+            case 'ew':
+                return $qb->expr()->like($field, $qb->expr()->literal('%' . $data));
+            case 'en':
+                return $qb->expr()->not($qb->expr()->like($field, $qb->expr()->literal('%' . $data)));
+            case 'cn':
+                return $qb->expr()->like($field, $qb->expr()->literal('%' . $data . '%'));
+            case 'nc':
+                return $qb->expr()->not($qb->expr()->like($field, $qb->expr()->literal('%' . $data . '%')));
+            default:
+                return false;
+        }
+    }
+
+    public function getQuery()
+    {
+        $paginator = new GDoctrinePaginator($this->query->setHydrationMode(2)); //Array
+        return $paginator;
     }
 
 }

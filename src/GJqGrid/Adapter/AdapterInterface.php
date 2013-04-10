@@ -2,10 +2,10 @@
 
 namespace GJqGrid\Adapter;
 
-
-interface  AdapterInterface
+interface AdapterInterface
 {
-	/**
+
+    /**
      * Sort records
      *
      */
@@ -14,6 +14,6 @@ interface  AdapterInterface
     /**
      * Filter records
      *
-    */
+     */
     public function filter(array $filters = array());
 }

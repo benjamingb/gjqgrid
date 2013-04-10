@@ -60,6 +60,34 @@ class AdapterDbSelect extends DbSelect implements AdapterInterface
             }
         }
     }
+    
+    public function getQuery()
+    {
+       return $this;
+    }
+    
+    /*public function setFilter(array $filters = array())
+    {
+        if (!empty($filters)) {
+            foreach ($filters['rules'] as $value) {
+
+                $parameter = $value['field'] . $this->_getValueOperator($value['op'], $value['data']);
+                if (!$this->_isExpression($value['field'])) {
+                    if ($filters['groupOp'] == 'AND') {
+                        $this->_select->where($parameter);
+                    } else {
+                        $this->_select->orWhere($parameter);
+                    }
+                } else {
+                    if ($filters['groupOp'] == 'AND') {
+                        $this->_select->having($parameter);
+                    } else {
+                        $this->_select->orHaving($parameter);
+                    }
+                }
+            }
+        }
+    }*/
 
     protected function operator($rules, $where)
     {

@@ -14,7 +14,8 @@ namespace GJqGrid;
 use Traversable;
 use Zend\Stdlib\ArrayUtils;
 
-class Column implements ColumnInterface {
+class Column implements ColumnInterface
+{
 
     /**
      * @var array
@@ -31,7 +32,6 @@ class Column implements ColumnInterface {
      */
     protected $messages = array();
 
-
     /**
      * @var mixed
      */
@@ -42,9 +42,9 @@ class Column implements ColumnInterface {
      * @param  array            $attributes Optional attributes for the column
      * @throws Exception\InvalidArgumentException
      */
-    public function __construct($name = null, $attributes = array())
+    public function __construct($name = null, array $attributes = array())
     {
-        if (null !== $name) {
+        if (!$this->hasAttribute('name') && null !== $name) {
             $this->setName($name);
         }
 
@@ -68,14 +68,13 @@ class Column implements ColumnInterface {
     public function getName()
     {
         $name = $this->getAttribute('name');
-        if(null===$name){
-           throw new Exception\InvalidArgumentException(
-                            'setName() method expects an string argument');  
-           return null;
+        if (null === $name) {
+            throw new Exception\InvalidArgumentException(
+            'setName() method expects an string argument');
+            return null;
         }
         return $name;
     }
-
 
     /**
      * Get column index
@@ -84,7 +83,6 @@ class Column implements ColumnInterface {
      */
     public function getIndex()
     {
-        return null;
         $index = $this->getAttribute('index');
         if (!empty($index)) {
             return $index;
@@ -96,7 +94,6 @@ class Column implements ColumnInterface {
         return $index;
     }
 
-
     /**
      * Set a single column attribute
      *
@@ -106,7 +103,6 @@ class Column implements ColumnInterface {
      */
     public function setAttribute($key, $value)
     {
-  
         $this->attributes[$key] = $value;
         return $this;
     }
@@ -119,7 +115,6 @@ class Column implements ColumnInterface {
      */
     public function getAttribute($key)
     {
-        $this->getIndex();
         if (!array_key_exists($key, $this->attributes)) {
             return null;
         }
@@ -150,18 +145,18 @@ class Column implements ColumnInterface {
     {
         if (!is_array($arrayOrTraversable) && !$arrayOrTraversable instanceof Traversable) {
             throw new Exception\InvalidArgumentException(sprintf(
-                            '%s expects an array or Traversable argument; received "%s"', 
-                            __METHOD__, 
-                            (is_object($arrayOrTraversable) ? get_class($arrayOrTraversable) : gettype($arrayOrTraversable))
+                    '%s expects an array or Traversable argument; received "%s"', __METHOD__, (is_object($arrayOrTraversable) ? get_class($arrayOrTraversable) : gettype($arrayOrTraversable))
             ));
         }
 
         foreach ($arrayOrTraversable as $key => $value) {
-            $this->setAttribute($key, $value);
+            if (strtolower($key) == 'colname') {
+                $this->setColName($value);
+            } else {
+                $this->setAttribute($key, $value);
+            }
         }
-        
-        $this->getIndex();
-        
+
         return $this;
     }
 
@@ -172,6 +167,8 @@ class Column implements ColumnInterface {
      */
     public function getAttributes()
     {
+       
+        $this->getIndex();
         return $this->attributes;
     }
 
@@ -186,7 +183,7 @@ class Column implements ColumnInterface {
         return $this;
     }
 
-  /**
+    /**
      * Remove attribute
      *
      * @param  string $key
@@ -200,7 +197,7 @@ class Column implements ColumnInterface {
         }
         return false;
     }
-    
+
     /**
      * Set the colname used for this column
      *
@@ -224,25 +221,25 @@ class Column implements ColumnInterface {
     public function getColName()
     {
         if (!empty($this->colname)) {
-            return $this->colname ;
+            return $this->colname;
         }
-         $colname = $this->getName();
-         $this->setColName($colname);
-         return $this->colname;
+        $colname = $this->getName();
+        $this->setColName($colname);
+        return $this->colname;
     }
 
-
-     /* Set a list of messages to report when validation fails
+    /* Set a list of messages to report when validation fails
      *
      * @param  array|Traversable $messages
      * @return column|columnInterface
      * @throws Exception\InvalidArgumentException
      */
+
     public function setMessages($messages)
     {
         if (!is_array($messages) && !$messages instanceof Traversable) {
             throw new Exception\InvalidArgumentException(sprintf(
-                            '%s expects an array or Traversable object of validation error messages; received "%s"', __METHOD__, (is_object($messages) ? get_class($messages) : gettype($messages))
+                    '%s expects an array or Traversable object of validation error messages; received "%s"', __METHOD__, (is_object($messages) ? get_class($messages) : gettype($messages))
             ));
         }
 

@@ -194,7 +194,7 @@ class JqGrid implements JqGridInterface
         if ($numargs > 0) {
             $key = (string) $arguments[0];
             unset($arguments[0]);
-            if ($key == 'navGrid') {
+            if (in_array($key, array('navGrid', 'navButtonAdd'))) {
                 if (is_string($arguments[1]) && "#" == $arguments[1][0]) {
                     $this->setAttribute('pager', $arguments[1]);
                 } else {
@@ -232,11 +232,15 @@ class JqGrid implements JqGridInterface
      * @param type $name
      * @return Gnbit_JqGrid 
      */
-    public function addColumn($column, $options = null)
+    public function addColumn($column, $name = null, $options = array())
     {
         if (is_string($column)) {
-            $this->columns[$column] = new Column($column, $options);
-        } elseif ($column instanceof ColumnInterface) {
+            if (null === $name) {
+                throw new Exception\InvalidArgumentException('Column specified by string must have an accompanying name');
+            }
+            $class = '\GJqGrid\Column\\' . ucfirst(strtolower($column));
+            $this->columns[$name] = new $class($name, $options);
+        } elseif ($columnType instanceof ColumnInterface) {
             $name = $column->getName();
             $this->columns[$name] = $column;
         }
@@ -323,22 +327,24 @@ class JqGrid implements JqGridInterface
         }
 
 
-        $page = (int) $this->getParam('page', 1);
-        $rows = (int) $this->getParam('rows', 20);
+        $page = (int) $this->getParam('page', 1); //page number
+        $rows = (int) $this->getParam('rows', 20); //rows for page
 
 
-        $paginator = new Paginator($this->getSource());
-
+        $source = $this->getSource();
+        //$paginator = new Paginator($this->getSource());
         // Filter items 
         if ($this->getParam('_search') == 'true') {
             $filters = Json::decode($this->getParam('filters'), Json::TYPE_ARRAY);
-            $paginator->getAdapter()->filter($filters);
+            $source->filter($filters);
         }
         //Sort items by column
         if ($sidx = $this->getParam('sidx')) {
-            $paginator->getAdapter()->sort($sidx, $this->getParam('sord'));
+            $source->sort($sidx, $this->getParam('sord'));
         }
 
+
+        $paginator = new Paginator($source->getQuery());
         $paginator->setCurrentPageNumber($page, $rows);
         $paginator->setItemCountPerPage($rows);
 
@@ -359,7 +365,7 @@ class JqGrid implements JqGridInterface
                     if (isset($column[$name])) {
                         $cells[] = $column[$name];
                     } else {
-                        $cells[] = ''; //columna Vacia 
+                        $cells[] = ''; //empty column
                     }
                     $rowsetGrid['rows'][$index]['id'] = $cells[0];
                 }
