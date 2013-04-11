@@ -20,7 +20,7 @@ namespace GJqGrid\Adapter;
  * @version    $
  */
 use Zend\Paginator\Adapter\AdapterInterface as PaginatorAdapterInterface;
-use GJqGrid\Adapter\Paginator\GDoctrinePaginator;
+use GJqGrid\Paginator\Adapter\DoctrinePaginator;
 
 /**
  * Nota:

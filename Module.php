@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -12,37 +13,38 @@ namespace GJqGrid;
 use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\Loader\AutoloaderFactory;
 use Zend\Loader\StandardAutoloader;
-
-
 use GJqGrid\JqGrid;
-
 
 class Module implements AutoloaderProviderInterface
 {
 
-	public function getAutoloaderConfig() {
-		return array(
-			'Zend\Loader\StandardAutoloader' => array(
-				'namespaces' => array(
-					__NAMESPACE__ => __DIR__ . '/src/' . __NAMESPACE__ ,
-				),
-			),
-		);
-	}
+    public function getAutoloaderConfig()
+    {
+        return array(
+            'Zend\Loader\StandardAutoloader' => array(
+                'namespaces' => array(
+                    __NAMESPACE__ => __DIR__ . '/src/' . __NAMESPACE__,
+                ),
+            ),
+        );
+    }
 
-	public function getConfig() 
-	{
-		return include __DIR__ . '/config/module.config.php';
-	}
+    public function getConfig()
+    {
+        return include __DIR__ . '/config/module.config.php';
+    }
 
-	public function onBootstrap( $e ) 
-	{
-			JqGrid::setService($e->getApplication()->getServiceManager());
+    public function onBootstrap($e)
+    {
+        $sm = $e->getApplication()->getServiceManager();
+         
+        JqGrid::setService($sm);
 
-			$moduleConfig = $this->getConfig();  
-            $sm = $e->getApplication()->getServiceManager();  
-            $helper = $sm->get('viewhelpermanager')->get('jqgrid');  
-            $helper->setStylesheets($moduleConfig['GJqGrid']['stylesheets']); 
-            $helper->setScripts($moduleConfig['GJqGrid']['scripts']); 
-	}
+        $moduleConfig = $this->getConfig();
+       
+        $helper = $sm->get('viewhelpermanager')->get('jqgrid');
+        $helper->setStylesheets($moduleConfig['GJqGrid']['stylesheets']);
+        $helper->setScripts($moduleConfig['GJqGrid']['scripts']);
+    }
+
 }

@@ -1,11 +1,11 @@
 <?php
 
-namespace GJqGrid\Adapter\Paginator;
+namespace GJqGrid\Paginator\Adapter;
 
-use DoctrineORMModule\Paginator\Adapter\DoctrinePaginator;
+use DoctrineORMModule\Paginator\Adapter\DoctrinePaginator as DPaginator;
 use Doctrine\ORM\Tools\Pagination\Paginator as ORMPaginator;
 
-class GDoctrinePaginator extends DoctrinePaginator
+class DoctrinePaginator extends DPaginator
 {
 
     public function __construct($query)

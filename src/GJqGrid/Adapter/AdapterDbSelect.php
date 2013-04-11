@@ -24,13 +24,15 @@ namespace GJqGrid\Adapter;
  * @see Gnbit_JqGrid_Adapter_Interface
  */
 use Zend\Paginator\Adapter;
-use Zend\Paginator\Adapter\DbSelect;
+//use Zend\Paginator\Adapter\DbSelect;
 use Zend\Db\Sql\Where;
 use Zend\Db\Sql\Predicate\PredicateSet;
 use Zend\Db\Sql\Predicate\Like;
+use Zend\Db\Sql\Select;
+
+use GJqGrid\Paginator\Adapter\DbSelect;
 use GJqGrid\Adapter\Sql\Predicate\NotIn;
 use GJqGrid\Adapter\Sql\Predicate\NotLike;
-
 
 class AdapterDbSelect extends DbSelect implements AdapterInterface
 {
@@ -45,55 +47,51 @@ class AdapterDbSelect extends DbSelect implements AdapterInterface
 
     public function filter(array $filters = array())
     {
-        $where = $this->select->getRawState('where');
+
 
         if (!empty($filters)) {
-            foreach ($filters['rules'] as $rules) {
+            foreach ($filters['rules'] as $rule) {
 
-                $predicate = $this->operator($rules, $where);
-
-                if ($filters['groupOp'] == 'AND') {
-                    $this->select->where($predicate);
+                if (!$this->isExpresssion($rule['field'])) {
+                    $where = $this->select->getRawState('where');
+                    $predicate = $this->operator($rule, $where);
+                    if ($filters['groupOp'] == 'AND') {
+                        $this->select->where($predicate);
+                    } else {
+                        $this->select->where($predicate->or);
+                    }
                 } else {
-                    $this->select->where($predicate->or);
+                    $having = $this->select->getRawState('having');
+                    $predicate = $this->operator($rule, $having);
+                    if ($filters['groupOp'] == 'AND') {
+                        $this->select->having($predicate);
+                    } else {
+                        $this->select->having($predicate->or);
+                    }
                 }
             }
         }
     }
-    
+
     public function getQuery()
     {
-       return $this;
+        return $this;
     }
-    
-    /*public function setFilter(array $filters = array())
-    {
-        if (!empty($filters)) {
-            foreach ($filters['rules'] as $value) {
 
-                $parameter = $value['field'] . $this->_getValueOperator($value['op'], $value['data']);
-                if (!$this->_isExpression($value['field'])) {
-                    if ($filters['groupOp'] == 'AND') {
-                        $this->_select->where($parameter);
-                    } else {
-                        $this->_select->orWhere($parameter);
-                    }
-                } else {
-                    if ($filters['groupOp'] == 'AND') {
-                        $this->_select->having($parameter);
-                    } else {
-                        $this->_select->orHaving($parameter);
-                    }
-                }
-            }
+    protected function isExpresssion($col)
+    {
+        $columns = $this->select->getRawState('columns');
+        if (array_key_exists($col, $columns)) {
+            return true;
         }
-    }*/
+        return false;
+    }
 
     protected function operator($rules, $where)
     {
-        $op     = $rules['op'];
-        $field  = $rules['field'];
-        $data   = $rules['data'];
+        $op = $rules['op'];
+        $field = $rules['field'];
+        $data = $rules['data'];
 
         switch ($op) {
             case 'eq':
@@ -111,19 +109,19 @@ class AdapterDbSelect extends DbSelect implements AdapterInterface
             case 'bw':
                 return $where->like($field, "$data%");
             case 'bn':
-            	return $where->addPredicate(new NotLike($field, "$data%"));
+                return $where->addPredicate(new NotLike($field, "$data%"));
             case 'in':
-            	return $where->in($field, array($data));
+                return $where->in($field, array($data));
             case 'ni':
-            	return $where->addPredicate(new NotIn($field, array($data)));
+                return $where->addPredicate(new NotIn($field, array($data)));
             case 'ew':
                 return $where->like($field, "%$data");
             case 'en':
-            	return $where->addPredicate(new NotLike($field, "%$data"));
+                return $where->addPredicate(new NotLike($field, "%$data"));
             case 'cn':
                 return $where->like($field, "%$data%");
             case 'nc':
-            	return $where->addPredicate(new NotLike($field, "%$data%"));
+                return $where->addPredicate(new NotLike($field, "%$data%"));
             default:
                 return false;
         }
@@ -131,7 +129,8 @@ class AdapterDbSelect extends DbSelect implements AdapterInterface
 
     public function getSelect()
     {
-        return $this->select->getSqlString();
+        //return $this->select->getSqlString();
+        return $this->select;
     }
 
 }

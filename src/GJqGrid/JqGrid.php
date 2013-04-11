@@ -51,6 +51,7 @@ class JqGrid implements JqGridInterface
     protected $columns = array();
     protected $source;
     protected static $serviceManager;
+    protected $model = null;
 
     /**
      * @param  int|string  $id  for the jqgrid
@@ -287,7 +288,6 @@ class JqGrid implements JqGridInterface
 
     public static function setService(ServiceManager $sm)
     {
-
         self::$serviceManager = $sm;
     }
 
@@ -326,6 +326,12 @@ class JqGrid implements JqGridInterface
             return null;
         }
 
+        $operation = $this->getParam('oper');
+        if ($operation) {
+            $this->operations($operation);
+            return null;
+        }
+
 
         $page = (int) $this->getParam('page', 1); //page number
         $rows = (int) $this->getParam('rows', 20); //rows for page
@@ -345,8 +351,9 @@ class JqGrid implements JqGridInterface
 
 
         $paginator = new Paginator($source->getQuery());
-        $paginator->setCurrentPageNumber($page, $rows);
+        $paginator->setCurrentPageNumber($page);
         $paginator->setItemCountPerPage($rows);
+       
 
         $rowsetGrid = array();
         $rowsetGrid['page'] = $paginator->getCurrentPageNumber();
@@ -378,6 +385,36 @@ class JqGrid implements JqGridInterface
 
 
         $this->sendResponse(\Zend\Json\Json::encode($rowsetGrid));
+    }
+
+    public function model($model)
+    {
+        $editUrl = $this->getAttribute('editurl');
+        if (empty($editUrl)) {
+            $request = self::getService()->get('request');
+            $uri = $request->getUri();
+            $this->setAttribute('editurl', $uri->getPath());
+        }
+        $this->model = $model;
+    }
+
+    public function getModel()
+    {
+        return $this->model;
+    }
+
+    protected function operations($type)
+    {
+        if (!$this->getModel()) {
+            return false;
+        }
+        $request = self::getService()->get('request');
+        if ($type == 'del') {
+            $this->getModel()->remove($request->getPost());
+        } else {
+            $this->getModel()->persist($request->getPost());
+        }
+        exit;
     }
 
     protected function sendResponse($data)
