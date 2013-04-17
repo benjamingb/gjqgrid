@@ -29,14 +29,14 @@ class ModelTable extends AbstractTableGateway
         $this->id = trim($id);
     }
 
-    /* public function getMeta()
-      {
-      if (!isset($this->meta['table']) && !isset($this->meta['id'])) {
-      throw new Exception\InvalidArgumentException('option "table" and "id" is not defined in meta');
-      return false;
-      }
-      return $this->meta;
-      } */
+    public function getMeta()
+    {
+        /* if (!isset($this->meta['table']) && !isset($this->meta['id'])) {
+          throw new Exception\InvalidArgumentException('option "table" and "id" is not defined in meta');
+          return false;
+          }
+          return $this->meta; */
+    }
 
     public function persist($data)
     {
