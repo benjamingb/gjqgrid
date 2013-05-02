@@ -306,7 +306,7 @@ class JqGrid implements JqGridInterface
         return $this->source;
     }
 
-    protected function getParam($name, $default = null)
+    private function getParam($name, $default = null)
     {
         $mtype = $this->getAttribute('mtype');
         $request = self::getService()->get('request');
@@ -314,8 +314,10 @@ class JqGrid implements JqGridInterface
             return $request->getPost($name, $default);
         } else {
             //$param = self::getService()->get('Application')->getMvcEvent()->getRouteMatch();
-            $param = self::getService()->get('ControllerPluginManager')->get('Params');
-            return $param->fromQuery($name, $default);
+            //$param = self::getService()->get('ControllerPluginManager')->get('Params');
+            //$param->fromQuery($name, $default);
+            $param = $request->getQuery($name, $default);
+            return $param;
         }
     }
 
