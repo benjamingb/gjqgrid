@@ -29,7 +29,6 @@ use Zend\Db\Sql\Where;
 use Zend\Db\Sql\Predicate\PredicateSet;
 use Zend\Db\Sql\Predicate\Like;
 use Zend\Db\Sql\Select;
-
 use GJqGrid\Paginator\Adapter\DbSelect;
 use GJqGrid\Adapter\Sql\Predicate\NotIn;
 use GJqGrid\Adapter\Sql\Predicate\NotLike;
@@ -41,13 +40,13 @@ class AdapterDbSelect extends DbSelect implements AdapterInterface
     {
         $order = strtoupper($order);
         if (!empty($column)) {
+            $this->select->reset(Select::ORDER);
             $this->select->order("$column $order");
         }
     }
 
     public function filter(array $filters = array())
     {
-
 
         if (!empty($filters)) {
             foreach ($filters['rules'] as $rule) {
@@ -81,9 +80,18 @@ class AdapterDbSelect extends DbSelect implements AdapterInterface
     protected function isExpresssion($col)
     {
         $columns = $this->select->getRawState('columns');
+
         if (array_key_exists($col, $columns)) {
             return true;
         }
+
+        $joins = $this->select->getRawState('joins');
+        foreach ($joins as $table) {
+            if (array_key_exists($col, $table['columns'])) {
+                return true;
+            }
+        }
+
         return false;
     }
 
