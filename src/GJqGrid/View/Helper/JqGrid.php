@@ -111,8 +111,8 @@ class JqGrid extends BaseAbstractHelper
             $script = sprintf('jQuery("#%s").jqGrid(%s);', $this->jqGridId, $json);
             $script .= $this->methods();
         }
-        //return $script;
-        return Json::prettyPrint($script, array("indent" => " "));
+        return $script;
+        //return Json::prettyPrint($script, array("indent" => " "));
     }
 
     public function displayAll()
