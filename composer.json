@@ -1,0 +1,40 @@
+{
+    "name": "gnbit/gjqgrid",
+    "description": "Jqgrid Component",
+    "type": "library",
+    "keywords": [
+        "zf2"
+    ],
+    "homepage": "http://github.com/benjamingb",
+    "authors": [
+        {
+            "name": "Benjamin Gonzales",
+            "email": "benjamin@gnbit.com",
+            "homepage": "http://codigolinea.com/"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.3",
+        "zendframework/zend-db": "2.*",
+        "zendframework/zend-eventmanager": "2.*",
+        "zendframework/zend-loader": "2.*",
+        "zendframework/zend-modulemanager": "2.*",
+        "zendframework/zend-servicemanager": "2.*",
+        "zendframework/zend-stdlib": "2.*",
+    },
+    "autoload": {
+        "psr-0": {
+            "GJqgrid": "src/"
+        },
+        "classmap": [
+            "./Module.php"
+        ]
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "http://webserver/git"
+        }
+    ]
+}
+
