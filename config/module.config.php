@@ -12,6 +12,7 @@ return array(
             '/js/jqGrid/js/i18n/grid.locale-es.js',
             '/js/jqGrid/plugins/ui.multiselect.js',
             '/js/jqGrid/js/jquery.jqGrid.min.js',
+            //'/js/jqGrid/js/jquery.jqGrid.src.js',
             '/js/jquery.GJqGrid.exts.js',
         )
     ),

@@ -313,9 +313,6 @@ class JqGrid implements JqGridInterface
         if (null !== $mtype && strtoupper($mtype) == 'POST') {
             return $request->getPost($name, $default);
         } else {
-            //$param = self::getService()->get('Application')->getMvcEvent()->getRouteMatch();
-            //$param = self::getService()->get('ControllerPluginManager')->get('Params');
-            //$param->fromQuery($name, $default);
             $param = $request->getQuery($name, $default);
             return $param;
         }

@@ -1,5 +1,7 @@
 <?php
+
 #https://bitbucket.org/odiaseo/data-grid-for-zend-framework-2/src/459f34afec58?at=master
+
 namespace GJqGrid\View\Helper;
 
 use Zend\I18n\View\Helper\AbstractTranslatorHelper as BaseAbstractHelper;
@@ -12,11 +14,11 @@ use GJqgrid\JqGridInterface;
 class JqGrid extends BaseAbstractHelper
 {
 
-    private $stylesheets    = array();
-    private $scripts        = array();
-    private $jqGridObject   = null;
-    private $jqGridId       = null;
-    private $jqGridAttr     = null;
+    private $stylesheets  = array();
+    private $scripts      = array();
+    private $jqGridObject = null;
+    private $jqGridId     = null;
+    private $jqGridAttr   = null;
 
     /**
      * Invoke as function
@@ -47,7 +49,6 @@ class JqGrid extends BaseAbstractHelper
         }
     }
 
-
     public function prepareColumns()
     {
         
@@ -56,11 +57,11 @@ class JqGrid extends BaseAbstractHelper
     public function methods()
     {
         $func = function($value) {
-                    return Json::encode($value, false, array('enableJsonExprFinder' => true));
-                };
+            return Json::encode($value, false, array('enableJsonExprFinder' => true));
+        };
 
         $methods = $this->jqGridObject->getMethods();
-        $script = null;
+        $script  = null;
         foreach ($methods as $key => $value) {
             $attrs = null;
             if (!empty($value)) {
@@ -107,12 +108,29 @@ class JqGrid extends BaseAbstractHelper
         $script = null;
         if (null !== $this->jqGridObject) {
             $this->jqGridObject = $this->view->column()->render($this->jqGridObject);
-            $json = Json::encode($this->jqGridObject->getAttributes(), false, array('enableJsonExprFinder' => true));
-            $script = sprintf('jQuery("#%s").jqGrid(%s);', $this->jqGridId, $json);
+            $json               = Json::encode($this->jqGridObject->getAttributes(), false, array('enableJsonExprFinder' => true));
+            $script             = sprintf('jQuery("#%s").jqGrid(%s);', $this->jqGridId, $json);
             $script .= $this->methods();
         }
         return $script;
         //return Json::prettyPrint($script, array("indent" => " "));
+    }
+
+    public function subGrid($subGrid = null)
+    {
+        if ($subGrid) {
+            $this->jqGridObject->setAttribute('subGrid', true);
+            $this->jqGridObject->setAttribute('subGridRowExpanded', new \Zend\Json\Expr('
+            function(subgrid_id, row_id) {
+                var subgrid_table_id, pager_id;
+                subgrid_table_id = subgrid_id+"_t";
+                pager_id = "p_"+subgrid_table_id;
+                $("#"+subgrid_id).html("<table id=\'"+subgrid_table_id+"\' class=\'scroll\'></table><div id=\'"+pager_id+"\' class=\'scroll\'></div>");
+                console.log(subgrid_table_id);
+                '.$subGrid.'
+            }   
+        '));
+        }
     }
 
     public function displayAll()

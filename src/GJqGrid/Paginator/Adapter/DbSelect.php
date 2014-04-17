@@ -7,6 +7,7 @@ use Zend\Db\Sql\Expression;
 use Zend\Db\Sql\Select;
 
 
+/*Ya no se usa*/
 /**
  * @category   Zend
  * @package    Zend_Paginator

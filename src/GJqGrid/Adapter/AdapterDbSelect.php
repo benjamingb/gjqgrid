@@ -12,7 +12,7 @@ namespace GJqGrid\Adapter;
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
  * to benjamin@gnbit.com so we can send you a copy immediately.
- * 
+ *
  * @category   GJqGrid
  * @package    Gnbit_JqGrid
  * @copyright  Copyright (c) 2011 GnBit.SAC. (http://www.gnbit.com)
@@ -24,12 +24,11 @@ namespace GJqGrid\Adapter;
  * @see Gnbit_JqGrid_Adapter_Interface
  */
 use Zend\Paginator\Adapter;
-//use Zend\Paginator\Adapter\DbSelect;
+use Zend\Paginator\Adapter\DbSelect;
 use Zend\Db\Sql\Where;
-use Zend\Db\Sql\Predicate\PredicateSet;
 use Zend\Db\Sql\Predicate\Like;
 use Zend\Db\Sql\Select;
-use GJqGrid\Paginator\Adapter\DbSelect;
+//use GJqGrid\Paginator\Adapter\DbSelect; Deprecated
 use GJqGrid\Adapter\Sql\Predicate\NotIn;
 use GJqGrid\Adapter\Sql\Predicate\NotLike;
 
@@ -47,7 +46,6 @@ class AdapterDbSelect extends DbSelect implements AdapterInterface
 
     public function filter(array $filters = array())
     {
-
         if (!empty($filters)) {
             foreach ($filters['rules'] as $rule) {
 
