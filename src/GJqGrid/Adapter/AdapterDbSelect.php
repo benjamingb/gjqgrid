@@ -23,10 +23,7 @@ namespace GJqGrid\Adapter;
 /**
  * @see Gnbit_JqGrid_Adapter_Interface
  */
-use Zend\Paginator\Adapter;
 use Zend\Paginator\Adapter\DbSelect;
-use Zend\Db\Sql\Where;
-use Zend\Db\Sql\Predicate\Like;
 use Zend\Db\Sql\Select;
 //use GJqGrid\Paginator\Adapter\DbSelect; Deprecated
 use GJqGrid\Adapter\Sql\Predicate\NotIn;

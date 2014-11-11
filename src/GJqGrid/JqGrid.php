@@ -279,8 +279,8 @@ class JqGrid implements JqGridInterface
     public function removeColumn($name)
     {
         $name = (string) $name;
-        if (isset($this->_columns[$name])) {
-            unset($this->_columns[$name]);
+        if (isset($this->columns[$name])) {
+            unset($this->columns[$name]);
             return true;
         }
         return false;
